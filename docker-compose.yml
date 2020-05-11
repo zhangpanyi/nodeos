@@ -1,0 +1,50 @@
+version: "3.0"
+
+services:
+  nodeos:
+    image: nodeos
+    build:
+      context: .
+    logging:
+      driver: json-file
+      options:
+        max-file: "5"
+        max-size: 10m
+    container_name: nodeos
+    restart: on-failure
+    expose:
+      - 8888
+    ports:
+      - 8888:8888
+    volumes:
+      - eos-data-volume:/data
+      - ./jungle/config.ini:/etc/eosio/jungle/config.ini
+      - ./jungle/genesis.json:/etc/eosio/jungle/genesis.json
+      - ./mainnet/config.ini:/etc/eosio/mainnet/config.ini
+      - ./mainnet/genesis.json:/etc/eosio/mainnet/genesis.json
+    command:
+      nodeos -c /etc/eosio/mainnet/config.ini --genesis-json /etc/eosio/mainnet/genesis.json --data-dir /data/mainnet
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo
+    logging:
+      driver: json-file
+      options:
+        max-file: "5"
+        max-size: 10m
+    container_name: mongodb
+    restart: on-failure
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo-data-volume:/data
+
+volumes:
+  eos-data-volume:
+    external: true
+  mongo-data-volume:
+    external: true
